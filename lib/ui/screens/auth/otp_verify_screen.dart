@@ -33,14 +33,12 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.data.message ?? 'Success')),
             );
-            Future.microtask(() {
-              if (!context.mounted) return;
-              if (state.data.profileExists == true) {
-                context.goNamed('home'); // Existing user → Home
-              } else {
-                context.goNamed('profile'); // New user → Profile creation
-              }
-            });
+            final profileExists = state.data.profileExists ?? false;
+            if (profileExists) {
+              context.goNamed('home');
+            } else {
+              context.goNamed('profile');
+            }
           }
         },
         builder: (context, state) {

@@ -19,7 +19,7 @@ class AuthBloc extends Bloc<AuthEvent,AuthState>{
          isGoogleLogin: false, )
        );
      } catch (e) {
-       emit(AuthFailure(e.toString()));
+       emit(AuthFailure(e.toString().replaceAll('Exception: ', '')));
      }
    },);
    on<VerifyOtpEvent>((event, emit) async {
@@ -35,7 +35,7 @@ class AuthBloc extends Bloc<AuthEvent,AuthState>{
          isGoogleLogin: false, )
        );
      } catch (e) {
-       emit(AuthFailure(e.toString()));
+       emit(AuthFailure(e.toString().replaceAll('Exception: ', '')));
      }
    },);
    on<GoogleLoginRequestedEvent>((event, emit) async {
@@ -67,7 +67,7 @@ class AuthBloc extends Bloc<AuthEvent,AuthState>{
          ),
        );
      } catch (error) {
-       emit(AuthFailure(error.toString()));
+       emit(AuthFailure(error.toString().replaceAll('Exception: ', '')));
      } finally {
        _isGoogleLoginInProgress = false;
      }

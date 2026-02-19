@@ -1,11 +1,6 @@
-
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-
-import '../../utils/dio_client.dart';
-import '../../utils/token_storage.dart';
-import 'auth/login_screen.dart';
+import '../../utils/auth_services.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -15,40 +10,30 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  final TokenStorage _tokenStorage = TokenStorage();
 
   @override
   void initState() {
     super.initState();
-    _checkAuth();
+    Future.microtask(() => _init(),);
   }
 
-  Future<void> _checkAuth() async {
-    final accessToken = await _tokenStorage.getAccessToken();
+  Future<void> _init() async {
+    final status = await AuthService.checkAuthStatus();
 
-    // ❌ No token → Login
-    if (accessToken == null) {
-      context.goNamed('login');
-      return;
-    }
+    if (!mounted) return;
 
-    try {
-      // 🔥 Silent protected API call
-      final response = await DioClient.dio.get("/api/user");
+    switch (status) {
+      case AuthStatus.authenticated:
+        context.goNamed('home');
+        break;
 
-      final bool profileExists = response.data['profileExists'] ?? false;
+      case AuthStatus.profileIncomplete:
+        context.goNamed('profile');
+        break;
 
-      // 👇 MAIN DECISION
-      if (profileExists == false) {
-        context.goNamed('profile'); // 👈 Create Profile
-      } else {
-        context.goNamed('home'); // 👈 Home
-      }
-
-    } on DioException catch (e) {
-      // ❌ access + refresh dono fail
-      await _tokenStorage.clearTokens();
-      context.goNamed('login');
+      case AuthStatus.unauthenticated:
+        context.goNamed('login');
+        break;
     }
   }
 
@@ -56,10 +41,8 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return const Scaffold(
       body: Center(
-        child: CircleAvatar(radius: 50,),
+        child: CircularProgressIndicator(),
       ),
     );
   }
 }
-
-
